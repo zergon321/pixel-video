@@ -20,7 +20,7 @@ import (
 const (
 	// FrameBufferSize is the size of the frame buffer
 	// to store the RGB frames from the video stream.
-	FrameBufferSize = 60
+	FrameBufferSize = 1024
 	// WindowWidth is the width of the window.
 	WindowWidth = 1280
 	// WindowHeight is the height of the window.
@@ -177,8 +177,8 @@ func readVideoFrames(videoPath string) <-chan *pixel.PictureData {
 								response == avutil.AvErrorEOF {
 								break
 							} else if response < 0 {
-								fmt.Printf("Error while receiving a frame from the decoder: %s\n",
-									avutil.ErrorFromCode(response))
+								//fmt.Printf("Error while receiving a frame from the decoder: %s\n",
+								//avutil.ErrorFromCode(response))
 
 								//return
 							}
@@ -198,6 +198,15 @@ func readVideoFrames(videoPath string) <-chan *pixel.PictureData {
 					// Free the packet that was allocated by av_read_frame
 					packet.AvFreePacket()
 				}
+
+				go func() {
+					for {
+						if len(frameBuffer) <= 0 {
+							close(frameBuffer)
+							break
+						}
+					}
+				}()
 
 				// Free the RGB image
 				avutil.AvFree(buffer)
@@ -221,8 +230,6 @@ func readVideoFrames(videoPath string) <-chan *pixel.PictureData {
 				os.Exit(1)
 			}
 		}
-
-		close(frameBuffer)
 	}()
 
 	return frameBuffer
@@ -238,7 +245,7 @@ func run() {
 	cfg := pixelgl.WindowConfig{
 		Title:  "Pixel Rocks!",
 		Bounds: pixel.R(0, 0, 1280, 720),
-		VSync:  true,
+		VSync:  false,
 	}
 	win, err := pixelgl.NewWindow(cfg)
 	handleError(err)
@@ -281,6 +288,7 @@ func run() {
 		case <-perSecond:
 			win.SetTitle(fmt.Sprintf("%s | FPS: %d | frameCounter: %d", cfg.Title, fps, frameCounter))
 			fps = 0
+			frameCounter = 0
 
 		default:
 		}
