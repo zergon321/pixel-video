@@ -243,9 +243,10 @@ func run() {
 
 	// Create a new window.
 	cfg := pixelgl.WindowConfig{
-		Title:  "Pixel Rocks!",
-		Bounds: pixel.R(0, 0, 1280, 720),
-		VSync:  false,
+		Title: "Pixel Rocks!",
+		Bounds: pixel.R(0, 0,
+			float64(WindowWidth), float64(WindowHeight)),
+		VSync: false,
 	}
 	win, err := pixelgl.NewWindow(cfg)
 	handleError(err)
@@ -286,7 +287,8 @@ func run() {
 
 		select {
 		case <-perSecond:
-			win.SetTitle(fmt.Sprintf("%s | FPS: %d | frameCounter: %d", cfg.Title, fps, frameCounter))
+			win.SetTitle(fmt.Sprintf("%s | FPS: %d | frameCounter: %d",
+				cfg.Title, fps, frameCounter))
 			fps = 0
 			frameCounter = 0
 
